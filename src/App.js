@@ -4,6 +4,7 @@ import './App.css'
 import Navbar from './layout/Navbar'
 import axios from 'axios'
 import Users from './users/Users'
+import User from './users/User'
 import Search from './users/Search'
 import PropTypes from 'prop-types'
 import Alert from './layout/Alert'
@@ -12,6 +13,7 @@ import About from './pages/About'
 class App extends Component {
   state = {
     users: [],
+    user: {},
     loading: false,
     alert: null,
   }
@@ -32,7 +34,7 @@ class App extends Component {
     this.setState({ users: res.data, loading: false })
   }
 
-  // Searching Github Users
+  // Searching GitHub Users
   searchUsers = async (text) => {
     this.setState({ loading: true })
     const res = await axios.get(
@@ -40,6 +42,16 @@ class App extends Component {
     )
 
     this.setState({ users: res.data.items, loading: false })
+  }
+
+  // Get single GitHub User
+  getUser = async (username) => {
+    this.setState({ loading: true })
+    const res = await axios.get(
+      `https://api.github.com/users/${username}?client_id=${process.env.REACT_APP_GITHUB_CLIENT_ID}&client_secret=$${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`
+    )
+
+    this.setState({ user: res.data, loading: false })
   }
 
   // clear users from state
@@ -55,7 +67,7 @@ class App extends Component {
   }
 
   render() {
-    const { users, loading } = this.state
+    const { users, user, loading } = this.state
     return (
       <Router>
         <div className='App'>
@@ -79,6 +91,18 @@ class App extends Component {
                 )}
               />
               <Route exact path='/about' component={About} />
+              <Route
+                exact
+                path='/user/:login'
+                render={(props) => (
+                  <User
+                    {...props}
+                    getUser={this.getUser}
+                    user={user}
+                    loading={loading}
+                  />
+                )}
+              />
             </Switch>
           </div>
         </div>
